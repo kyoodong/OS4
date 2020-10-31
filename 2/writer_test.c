@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
     }
 		count++;
 	}
+	//usleep(1);
 
 	for(int i=0;i<write_num_threads;i++)
 	{
