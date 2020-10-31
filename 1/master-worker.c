@@ -12,7 +12,7 @@ int total_items, max_buf_size, num_workers, num_masters;
 
 int *buffer;
 
-pthread_mutex_t producer_mutex, consumer_mutex;
+pthread_mutex_t mutex;
 
 void print_produced(int num, int master) {
 
@@ -34,21 +34,21 @@ void *generate_requests_loop(void *data)
 
   while(1)
 	{
-			pthread_mutex_lock(&producer_mutex);
+			pthread_mutex_lock(&mutex);
       if(item_to_produce >= total_items) {
-				pthread_mutex_unlock(&producer_mutex);
+				pthread_mutex_unlock(&mutex);
 				break;
       }
 
 			if (curr_buf_size >= max_buf_size) {
-				pthread_mutex_unlock(&producer_mutex);
+				pthread_mutex_unlock(&mutex);
 				continue;
 			}
  
       buffer[++curr_buf_size] = item_to_produce;
       print_produced(item_to_produce, thread_id);
       item_to_produce++;
-			pthread_mutex_unlock(&producer_mutex);
+			pthread_mutex_unlock(&mutex);
 	}
   return 0;
 }
@@ -59,14 +59,14 @@ void *generate_responds_loop(void *data) {
 	int thread_id = *((int *) data);
 
 	while (1) {
-		pthread_mutex_lock(&consumer_mutex);
+		pthread_mutex_lock(&mutex);
 		if (item_to_consume >= total_items) {
-			pthread_mutex_unlock(&consumer_mutex);
+			pthread_mutex_unlock(&mutex);
 			break;
 		}
 
 		if (curr_buf_size < 0) {
-			pthread_mutex_unlock(&consumer_mutex);
+			pthread_mutex_unlock(&mutex);
 			continue;
 		}
 
@@ -74,7 +74,7 @@ void *generate_responds_loop(void *data) {
 		buffer[curr_buf_size] = 0;
 		item_to_consume++;
 		curr_buf_size--;
-		pthread_mutex_unlock(&consumer_mutex);
+		pthread_mutex_unlock(&mutex);
 	}
 
 	return 0;
@@ -101,8 +101,7 @@ int main(int argc, char *argv[])
     max_buf_size = atoi(argv[2]);
   }
 
-	pthread_mutex_init(&producer_mutex, NULL);
-	pthread_mutex_init(&consumer_mutex, NULL);
+	pthread_mutex_init(&mutex, NULL);
   buffer = (int *)malloc (sizeof(int) * max_buf_size);
 
   //create master producer threads
@@ -143,8 +142,7 @@ int main(int argc, char *argv[])
 	free(worker_thread_id);
 	free(worker_thread);
 
-	pthread_mutex_destroy(&producer_mutex);
-	pthread_mutex_destroy(&consumer_mutex);
+	pthread_mutex_destroy(&mutex);
   return 0;
 }
 
