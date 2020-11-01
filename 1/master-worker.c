@@ -35,16 +35,20 @@ void *generate_requests_loop(void *data)
   while(1)
 	{
 			pthread_mutex_lock(&mutex);
+
+			// 모든 아이템을 버퍼에 넣은 상황 -> 종료
       if(item_to_produce >= total_items) {
 				pthread_mutex_unlock(&mutex);
 				break;
       }
 
+			// 모든 아이템을 다 넣진 못했지만 현재 버퍼가 가득 차 더 이상 넣을 수 없는 상황
 			if (curr_buf_size >= max_buf_size) {
 				pthread_mutex_unlock(&mutex);
 				continue;
 			}
  
+			// 버퍼에 아이템을 넣고 로그 출력
       buffer[++curr_buf_size] = item_to_produce;
       print_produced(item_to_produce, thread_id);
       item_to_produce++;
@@ -60,16 +64,20 @@ void *generate_responds_loop(void *data) {
 
 	while (1) {
 		pthread_mutex_lock(&mutex);
+
+		// 모든 아이템을 소비한 상황 -> 종료
 		if (item_to_consume >= total_items) {
 			pthread_mutex_unlock(&mutex);
 			break;
 		}
 
+		// 버퍼가 비어 소비할 아이템이 없는 상황 -> 대기
 		if (curr_buf_size < 0) {
 			pthread_mutex_unlock(&mutex);
 			continue;
 		}
 
+		// 아이템을 하나 소비하고 로그 출력
 		print_consumed(buffer[curr_buf_size], thread_id);
 		buffer[curr_buf_size] = 0;
 		item_to_consume++;
@@ -102,6 +110,8 @@ int main(int argc, char *argv[])
   }
 
 	pthread_mutex_init(&mutex, NULL);
+
+	// 버퍼 생성
   buffer = (int *)malloc (sizeof(int) * max_buf_size);
 
   //create master producer threads
@@ -110,12 +120,15 @@ int main(int argc, char *argv[])
   master_thread = (pthread_t *)malloc(sizeof(pthread_t) * num_masters);
 	worker_thread = (pthread_t *) malloc(sizeof(pthread_t) * num_workers);
 
+	// 스레드 아이디 지정
   for (i = 0; i < num_masters; i++)
     master_thread_id[i] = i;
 
+	// 마스터 스레드 생성
   for (i = 0; i < num_masters; i++)
     pthread_create(&master_thread[i], NULL, generate_requests_loop, (void *)&master_thread_id[i]);
   
+	// 스레드 아이디 지정
 	for (i = 0; i < num_workers; i++)
 		worker_thread_id[i] = i;
 
