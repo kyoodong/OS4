@@ -101,6 +101,11 @@ int main(int argc, char *argv[])
     }
 		count++;
 	}
+
+	// Reader 가 최소 1회는 Writer 보다 먼저실행됨을 보장하기 위함
+	// 간혹 Reader 가 시작조차하지 않았는데 Writer 가 먼저 시작되어 테스트를 통과하지 못함
+	// Writer 가 Reader 보다 먼저 실행되면 Write lock 이 먼저 잠겨서
+	// 모든 Reader lock 은 Write lock 보다 먼저 lock 되어야하는 테스트에 통과하지 못함
   usleep(1);
 
 	for(int i=0;i<write_num_threads;i++)

@@ -43,7 +43,7 @@ void *generate_requests_loop(void *data)
       }
 
 			// 모든 아이템을 다 넣진 못했지만 현재 버퍼가 가득 차 더 이상 넣을 수 없는 상황
-			if (curr_buf_size >= max_buf_size) {
+			if (curr_buf_size + 1 >= max_buf_size) {
 				pthread_mutex_unlock(&mutex);
 				continue;
 			}

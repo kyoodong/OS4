@@ -5,7 +5,6 @@ void init_rwlock(struct rw_lock * rw)
   //	Write the code for initializing your read-write lock.
 	pthread_mutex_init(&rw->mutex, NULL);
 	pthread_mutex_init(&rw->lock_mutex, NULL);
-	pthread_cond_init(&rw->cond, NULL);
 
 	rw->write_lock = 0;
 	rw->read_lock = 0;
